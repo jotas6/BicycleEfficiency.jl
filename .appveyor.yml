@@ -4,6 +4,8 @@ environment:
     - julia_version: 1.0
     - julia_version: 1.8
     - julia_version: nightly
+  COVERALLS_TOKEN:
+    secure: Oko5xlmGvguMWp0Ymt3rxm4PtrUh9ptYVfl1h2IIBdwrbYh7TUUWBO8wRl1Yik1E
 platform:
   - x64
 cache:
@@ -28,3 +30,5 @@ build_script:
 test_script:
   - echo "%JL_TEST_SCRIPT%"
   - C:\julia\bin\julia -e "%JL_TEST_SCRIPT%"
+after_test:
+  - C:\projects\julia\bin\julia -e "using Pkg; Pkg.add(\"Coverage\"); using Coverage; Coveralls.submit(process_folder())"
