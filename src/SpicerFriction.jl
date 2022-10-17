@@ -1,3 +1,5 @@
+greet() = "Hello, world!"
+
 """
     P1(μ1::Float64, ρ::Float64, T0::Float64, N::Vector{Int}, ω1::Float64)::Float64
 
