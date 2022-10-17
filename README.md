@@ -7,4 +7,4 @@
 
 ## Installation
 
-This package has not been submitted to the General Registry, so in order to download it you must type `] add https://github.com/jotas6/BicycleEfficiency.jl` inside the Julia REPL. Alternatively, you could do `using Pkg` and then `Pkg.add(url=https://github.com/jotas6/BicycleEfficiency.jl)
+This package has not been submitted to the General Registry, so in order to download it you must type `] add https://github.com/jotas6/BicycleEfficiency.jl` inside the Julia REPL. Alternatively, you could do `using Pkg` and then `Pkg.add(url=https://github.com/jotas6/BicycleEfficiency.jl)`
