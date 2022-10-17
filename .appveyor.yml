@@ -33,3 +33,4 @@ test_script:
   - C:\julia\bin\julia -e "%JL_TEST_SCRIPT%"
 after_test:
   - C:\julia\bin\julia -e "using Pkg; Pkg.add(\"Coverage\"); using Coverage; Coveralls.submit(process_folder())"
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(\"Coverage\"); using Coverage; Codecov.submit(process_folder())"
