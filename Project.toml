@@ -1,0 +1,13 @@
+name = "BicycleEfficiency"
+uuid = "070ee901-7190-4820-905e-5daca811db95"
+authors = ["Juan José González Oneto <jj.gonzalez20@uniandes.edu.co> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
