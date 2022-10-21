@@ -212,14 +212,13 @@ begin
 	P2_60 = P2(N, ω60, μ, T0, rR, γ)
 	P3_60 = P3(μ, T0, rR, N, ω60, ψ)
 
-	fig_bar = Figure()
+	fig_bar = Figure(dpi = 1500)
 	axs_bar = Axis(fig_bar[1, 1], 
 				   title = "Power losses at 80 rpm",
 				   xlabel = "Case",
 				   ylabel = "Power [W]")
 	barplot!([P1_60, P2_60, P3_60], color = :blue)
 	fig_bar
-	
 end
 
 # ╔═╡ d67e9135-0be1-40ca-a32a-8af9372c05da
@@ -287,7 +286,7 @@ Power loss decreases with increasing front sprocket size
 
 # ╔═╡ cc1cecf6-eb9e-4fcb-a253-f27a71a98637
 begin
-	fig_sprockets = Figure()
+	fig_sprockets = Figure(dpi = 1500)
 	axs_sprockets = Axis(fig_sprockets[1, 1], 
 							   title = "Influence of sprocket combination",
 							   xlabel = "Pedaling cadence [rad/s]",
@@ -301,6 +300,15 @@ begin
 	axislegend(position = :lt)
 	fig_sprockets
 end	
+
+# ╔═╡ 8cbbda62-7df5-4744-8b4d-8a542e5b6bb0
+Pt = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, [i, j], k, γ) for i in N1_plot[1:2:end] for j in N2_plot[1:2:end] for k in ω_plot]
+
+# ╔═╡ f2903646-26bc-4d6f-9f1f-ceabd3f49837
+s = 4*4*length(ω_plot)
+
+# ╔═╡ 1644d709-40f4-4bd5-8d27-96fcc9f330df
+[i+j+k for i in 1:3 for j in 1:3 for k in 1:3]
 
 # ╔═╡ 13e0fbb4-a3ba-454b-82aa-7348577be105
 md"""
@@ -1636,6 +1644,9 @@ version = "3.5.0+0"
 # ╠═1bb15867-e972-47dd-b07a-082e6e5240f4
 # ╟─64975586-e7a3-4aec-86c6-3ec014a3b134
 # ╠═cc1cecf6-eb9e-4fcb-a253-f27a71a98637
+# ╠═8cbbda62-7df5-4744-8b4d-8a542e5b6bb0
+# ╠═f2903646-26bc-4d6f-9f1f-ceabd3f49837
+# ╠═1644d709-40f4-4bd5-8d27-96fcc9f330df
 # ╟─13e0fbb4-a3ba-454b-82aa-7348577be105
 # ╟─0668aef8-48a4-4c42-babb-94309e0e2c29
 # ╟─d8bb62a8-7652-451e-b07b-94357892bf48
