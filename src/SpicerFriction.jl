@@ -1,16 +1,16 @@
 """
-    P1(μ1::Float64, ρ::Float64, T0::Float64, N::Vector{Int}, ω1::Float64)::Float64
+    P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
 
 Compute the power loss due to friction between pins and bushings.
 
 # Arguments
-- `μ1::Float64`: friction coefficient between the pin and the bushing.
-- `ρ::Float64`: bushing radius.
-- `T0::Float64`: free chain tension.
+- `μ1::Number`: friction coefficient between the pin and the bushing.
+- `ρ::Number`: bushing radius.
+- `T0::Number`: free chain tension.
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Float64)`: pedaling cadence.
+- `ω::Number)`: pedaling cadence.
 """
-function P1(μ1::Float64, ρ::Float64, T0::Float64, N::Vector{Int}, ω::Float64)::Float64
+function P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
 
     α = @. (360/N)*(π/180)
     ϕ = @. (30 - 120/N)*(π/180)
@@ -31,19 +31,19 @@ function P1(μ1::Float64, ρ::Float64, T0::Float64, N::Vector{Int}, ω::Float64)
 end
 
 """
-    P2(N::Vector{Int}, ω::Float64, μ2::Float64, T0::Float64, r0::Float64, γ::Float64)::Float64
+    P2(N::Vector{Int}, ω::Number, μ2::Number, T0::Number, r0::Number, γ::Number)::Float64
 
 Compute the power loss due to chain offset
 
 # Arguments
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Float64)`: pedaling cadence
-- `μ2::Float64`: friction coefficient between the chain and the sprocket teeth
-- `T0::Float64`: free chain tension
-- `r0::Float64`: radius of contact during offset operation
-- `γ::Float64`: chain offset angle
+- `ω::Number`: pedaling cadence
+- `μ2::Number`: friction coefficient between the chain and the sprocket teeth
+- `T0::Number`: free chain tension
+- `r0::Number`: radius of contact during offset operation
+- `γ::Number`: chain offset angle
 """
-function P2(N::Vector{Int}, ω::Float64, μ2::Float64, T0::Float64, r0::Float64, γ::Float64)::Float64
+function P2(N::Vector{Int}, ω::Number, μ2::Number, T0::Number, r0::Number, γ::Number)::Float64
 
     p1 = N[1]*ω*μ2
     p2 = T0*r0*sin(γ)
@@ -56,20 +56,19 @@ function P2(N::Vector{Int}, ω::Float64, μ2::Float64, T0::Float64, r0::Float64,
 end
 
 """
-    P3(μ3::Float64, T0::Float64, rR::Float64, N::Vector{Int}, ω::Float64,
-       ψ::Float64, δ::Float64)::Float64
+    P3(μ3::Number, T0::Number, rR::Number, N::Vector{Int}, ω::Number, ψ::Number)::Float64
 
 Compute the power loss due to interaction between rollers and sprocket teeth
 
 # Arguments
-- `μ3::Float64`: friction coefficient between roller and sprocket teeth.
-- `T0::Float64`: free chain tension.
-- `rR::Float64`: roller radius.
+- `μ3::Number`: friction coefficient between roller and sprocket teeth.
+- `T0::Number`: free chain tension.
+- `rR::Number`: roller radius.
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Float64)`: pedaling cadence
-- `ψ::Float64`: absolute roller rotation angle.
+- `ω::Number`: pedaling cadence
+- `ψ::Number`: absolute roller rotation angle.
 """
-function P3(μ3::Float64, T0::Float64, rR::Float64, N::Vector{Int}, ω::Float64, ψ::Float64)::Float64
+function P3(μ3::Number, T0::Number, rR::Number, N::Vector{Int}, ω::Number, ψ::Number)::Float64
 
     δ = ψ*rR
 
@@ -94,8 +93,8 @@ end
 
 
  """
-    Ptotal(μ::Vector{Float64}, p::Float64, ρ::Float64, ψ::Float64, rR::Float64,
-           δ::Float64, T0::Float64, N::Vector{Int}, ω::Float64)::Float64
+    Ptotal(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+           T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
 Compute the power loss due to all 3 sources (friction between pins and bushings,
 chain misalignment, interaction between rollers and sprocket teeth)
@@ -104,17 +103,17 @@ It is calculated as the sum of the losses from all sources, which are implemente
 separately in P1, P2 and P3
 
 # Arguments
-- `μ::Vector{Float64}`: vector containing the friction coefficients for cases 1, 2 and 3 (in that order).
-- `p::Float64`: chain pitch.
-- `ρ::Float64`: bushing radius.
-- `rR::Float64`: roller radius.
-- `T0::Float64`: free chain tension.
+- `μ::Vector{Number}`: vector containing the friction coefficients for cases 1, 2 and 3 (in that order).
+- `p::Number`: chain pitch.
+- `ρ::Number`: bushing radius.
+- `rR::Number`: roller radius.
+- `T0::Number`: free chain tension.
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Float64`: pedaling cadence.
-- `γ::Float64`: chain offset angle
+- `ω::Number`: pedaling cadence.
+- `γ::Number`: chain offset angle
 """
-function Ptotal(μ::Vector{Float64}, p::Float64, ρ::Float64, ψ::Float64, rR::Float64,
-                T0::Float64, N::Vector{Int}, ω::Float64, γ::Float64)::Float64
+function Ptotal(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+                T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
     δ = ψ*rR
     α = @. (360/N)*(π/180)
@@ -136,17 +135,17 @@ end
 Compute the power transmission efficiency considering only frictional losses
 
 # Arguments
-- `μ::Vector{Float64}`: friction coefficients for cases 1, 2 and 3 (in that order).
-- `p::Float64`: chain pitch.
-- `ρ::Float64`: bushing radius.
-- `ψ::Float64`: absolute roller rotation angle.
-- `rR::Float64`: roller radius.
-- `T0::Float64`: free chain tension.
+- `μ::Vector{Number}`: friction coefficients for cases 1, 2 and 3 (in that order).
+- `p::Number`: chain pitch.
+- `ρ::Number`: bushing radius.
+- `ψ::Number`: absolute roller rotation angle.
+- `rR::Number`: roller radius.
+- `T0::Number`: free chain tension.
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Float64`: pedaling cadence.
+- `ω::Number`: pedaling cadence.
 """
-function η(μ::Vector{Float64}, p::Float64, ρ::Float64, ψ::Float64, rR::Float64,
-           T0::Float64, N::Vector{Int}, ω::Float64, γ::Float64)::Float64
+function η(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+           T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
     α = @. (360/N)*(π/180)
     ϕ = @. (30 - 120/N)*(π/180)
