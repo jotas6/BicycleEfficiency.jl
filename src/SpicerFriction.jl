@@ -8,7 +8,7 @@ Compute the power loss due to friction between pins and bushings.
 - `ρ::Number`: bushing radius.
 - `T0::Number`: free chain tension.
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
-- `ω::Number)`: pedaling cadence.
+- `ω::Number`: pedaling cadence.
 """
 function P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
 
@@ -93,7 +93,7 @@ end
 
 
  """
-    Ptotal(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+    Ptotal(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
            T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
 Compute the power loss due to all 3 sources (friction between pins and bushings,
@@ -103,7 +103,7 @@ It is calculated as the sum of the losses from all sources, which are implemente
 separately in P1, P2 and P3
 
 # Arguments
-- `μ::Vector{Number}`: vector containing the friction coefficients for cases 1, 2 and 3 (in that order).
+- `μ::Vector{Float64}`: vector containing the friction coefficients for cases 1, 2 and 3 (in that order).
 - `p::Number`: chain pitch.
 - `ρ::Number`: bushing radius.
 - `rR::Number`: roller radius.
@@ -112,7 +112,7 @@ separately in P1, P2 and P3
 - `ω::Number`: pedaling cadence.
 - `γ::Number`: chain offset angle
 """
-function Ptotal(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+function Ptotal(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
                 T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
     δ = ψ*rR
@@ -135,7 +135,7 @@ end
 Compute the power transmission efficiency considering only frictional losses
 
 # Arguments
-- `μ::Vector{Number}`: friction coefficients for cases 1, 2 and 3 (in that order).
+- `μ::Vector{Float64}`: friction coefficients for cases 1, 2 and 3 (in that order).
 - `p::Number`: chain pitch.
 - `ρ::Number`: bushing radius.
 - `ψ::Number`: absolute roller rotation angle.
@@ -144,7 +144,7 @@ Compute the power transmission efficiency considering only frictional losses
 - `N::Vector{Int}`: number of teeth on the front and rear sprockets (in that order).
 - `ω::Number`: pedaling cadence.
 """
-function η(μ::Vector{Number}, p::Number, ρ::Number, ψ::Number, rR::Number,
+function η(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
            T0::Number, N::Vector{Int}, ω::Number, γ::Number)::Float64
 
     α = @. (360/N)*(π/180)
