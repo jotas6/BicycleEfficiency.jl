@@ -1,7 +1,7 @@
 using Documenter
 using BicycleEfficiency
 
-makedocs(sitename = "BicycleEfficiency.jl")
+makedocs(sitename = "BicycleEfficiency")
 
 deploydocs(
     repo = "github.com/jotas6/BicycleEfficiency.jl.git",

@@ -129,8 +129,8 @@ end
 
 
 """
-    η(μ::Vector{Float64}, p::Float64, ρ::Float64, ψ::Float64, rR::Float64,
-      T0::Float64, N::Vector{Int}, ω::Float64)::Float64
+    η(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
+      T0::Number, N::Vector{Int}, ω::Number)::Float64
 
 Compute the power transmission efficiency considering only frictional losses
 
