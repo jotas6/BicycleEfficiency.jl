@@ -12,10 +12,8 @@ Compute the power loss due to friction between pins and bushings.
 
 # Examples
 ```julia-repl
-
 julia> P1(0.09, 0.00175968, 300, [48, 24], 80*(2π/60))
 3.970776399955861
-
 ```
 """
 function P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
@@ -53,10 +51,8 @@ Compute the power loss due to chain offset
 
 # Examples
 ```julia-repl
-
 julia> P2([48, 24], 80*(2pi/60), 0.09, 300, 0.00249288, π/180)
 0.02952298838057144
-
 ```
 """
 function P2(N::Vector{Int}, ω::Number, μ2::Number, T0::Number, r0::Number, γ::Number)::Float64
@@ -86,10 +82,8 @@ Compute the power loss due to interaction between rollers and sprocket teeth
 
 # Examples
 ```julia-repl
-
 julia> P3(0.09, 300, 0.00249288, [48, 24], 80*(2pi/60), π/2)
 0.02840827017479334
-
 ```
 """
 function P3(μ3::Number, T0::Number, rR::Number, N::Vector{Int}, ω::Number, ψ::Number)::Float64
@@ -138,10 +132,8 @@ separately in P1, P2 and P3
 
 # Examples
 ```julia-repl
-
 julia> Ptotal(fill(0.09, 3), 0.01222, 0.00175968, π/2, 0.00249288, 300, [48, 24], 80*(2π/60), π/180)
 4.028707658511226
-
 ```
 """
 function Ptotal(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
@@ -179,10 +171,8 @@ Compute the power transmission efficiency considering only frictional losses
 
 # Examples
 ```julia-repl
-
 julia> η(fill(0.09, 3), 0.01222, 0.00175968, π/2, 0.00249288, 300, [48, 24], 80*(2π/60), π/180)
 0.9828290896987895
-
 ```
 """
 function η(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
