@@ -18,21 +18,7 @@ julia> P1(0.09, 0.00175968, 300, [48, 24], 80*(2π/60))
 """
 function P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
 
-    α = @. (360/N)*(π/180)
-    ϕ = @. (30 - 120/N)*(π/180)
-
-    p1 = μ1*ρ*(π/2)*T0
-
-    num = @. 1 + tan(α/2)/tan(ϕ/2)
-    den = @. 1 - tan(α/2)/tan(ϕ/2)
-
-    p2 = @. sin(ϕ)log(abs(num/den))
-
-    Wf = p1*sum(p2)
-
-    Pf = N[1]*ω*Wf/2π
-
-    return Pf
+    return N[1]*ω*μ1*ρ*(π/2)*T0*sum(1 ./ N)
 
 end
 
