@@ -13,7 +13,7 @@ Compute the power loss due to friction between pins and bushings.
 # Examples
 ```julia-repl
 julia> P1(0.09, 0.00175968, 300, [48, 24], 80*(2π/60))
-3.970776399955861
+1.8756733110309638
 ```
 """
 function P1(μ1::Number, ρ::Number, T0::Number, N::Vector{Int}, ω::Number)::Float64
@@ -119,7 +119,7 @@ separately in P1, P2 and P3
 # Examples
 ```julia-repl
 julia> Ptotal(fill(0.09, 3), 0.01222, 0.00175968, π/2, 0.00249288, 300, [48, 24], 80*(2π/60), π/180)
-4.028707658511226
+1.9336045695863286
 ```
 """
 function Ptotal(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
@@ -158,7 +158,7 @@ Compute the power transmission efficiency considering only frictional losses
 # Examples
 ```julia-repl
 julia> η(fill(0.09, 3), 0.01222, 0.00175968, π/2, 0.00249288, 300, [48, 24], 80*(2π/60), π/180)
-0.9828290896987895
+0.9917587093835826
 ```
 """
 function η(μ::Vector{Float64}, p::Number, ρ::Number, ψ::Number, rR::Number,
