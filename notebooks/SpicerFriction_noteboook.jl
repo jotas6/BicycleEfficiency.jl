@@ -67,7 +67,7 @@ md"""
 """
 
 # ╔═╡ ad7f901d-f0cb-4d6f-a470-0c31ad847192
-P1_value = P1(μ, ρ, T0, N, ω)
+P1_value = P1(μ, ρ, N, ω, T0)
 
 # ╔═╡ b34b7778-2399-49a7-a500-f53f4d4fafca
 md"""
@@ -83,7 +83,7 @@ md"""
 """
 
 # ╔═╡ 4dbe67c1-6476-4161-be38-27f14686c62d
-P3_value = P3(μ, T0, rR, N, ω, ψ)
+P3_value = P3(μ, rR, N, ω, ψ, T0)
 
 # ╔═╡ 3ab35ff2-9e9a-4422-9c2f-3ef7771c33cb
 md"""
@@ -91,7 +91,7 @@ md"""
 """
 
 # ╔═╡ 23d02c8e-a40b-4be8-bb78-893fdee3bc6c
-Ptotal_value = Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, N, ω, γ)
+Ptotal_value = Ptotal(fill(μ, 3), p, ρ, ψ, rR, N, ω, γ, T0)
 
 # ╔═╡ 62d2cbfa-202d-42e2-861f-f2cfa4cf4f64
 md"""
@@ -107,7 +107,7 @@ md"""
 """
 
 # ╔═╡ a25e2a53-b3cc-4948-8568-ef46f6072c6d
-efficiency = η(fill(μ, 3), p, ρ, ψ, rR, T0, N, ω, γ)
+efficiency = η(fill(μ, 3), p, ρ, ψ, rR, N, ω, γ, T0)
 
 # ╔═╡ 2f302054-c88f-4761-9391-d15e3497d0ce
 md"""
@@ -154,7 +154,7 @@ N1_preliminary = 52
 N2_preliminary = [11, 15, 21]
 
 # ╔═╡ 8e663730-6626-48e4-b6aa-62598b4111f2
-η_preliminary = round.([η(fill(μ, 3), p, ρ, ψ, rR, T0, [N1_preliminary, i], ω_preliminary, 0.0) for i in N2_preliminary]*100, digits = 2)
+η_preliminary = round.([η(fill(μ, 3), p, ρ, ψ, rR, [N1_preliminary, i], ω_preliminary, 0.0, T0) for i in N2_preliminary]*100, digits = 2)
 
 # ╔═╡ 283f4f88-11f9-49fe-8726-698d5ac77308
 η_prem_results = ["$(N1_preliminary):$(N2_preliminary[i]) = $(η_preliminary[i])%" for i in 1:length(N2_preliminary)]
@@ -173,13 +173,13 @@ md"""
 """
 
 # ╔═╡ 45bf99b7-4544-4433-80c3-50472ef96519
-P1_share = [P1(μ, ρ, T0, N, i) for i in ω_plot]
+P1_share = [P1(μ, ρ, N, i, T0) for i in ω_plot]
 
 # ╔═╡ 90833c42-4387-48b5-a5f6-3e6b04350afc
 P2_share = [P2(N, i, μ, T0, rR, γ) for i in ω_plot]
 
 # ╔═╡ 6a02c51c-9482-4006-9509-95e32829147c
-P3_share = [P3(μ, T0, rR, N, i, ψ) for i in ω_plot]
+P3_share = [P3(μ, rR, N, i, ψ, T0) for i in ω_plot]
 
 # ╔═╡ 945730ce-019e-4c7f-bc18-a2aa4f38d333
 begin
@@ -208,9 +208,9 @@ Below, there is an example of power losses at 80 rpm.
 # ╔═╡ 3e35498e-be7f-4f94-b523-4fc72e3ae976
 begin 
 	ω60 = 80*(2π/60)
-	P1_60 = P1(μ, ρ, T0, N, ω60)
+	P1_60 = P1(μ, ρ, N, ω60, T0)
 	P2_60 = P2(N, ω60, μ, T0, rR, γ)
-	P3_60 = P3(μ, T0, rR, N, ω60, ψ)
+	P3_60 = P3(μ, rR, N, ω60, ψ, T0)
 
 	fig_bar = Figure(dpi = 1500)
 	axs_bar = Axis(fig_bar[1, 1], 
@@ -251,7 +251,7 @@ begin
 							  ylabel = "Power loss [W]")
 	N_front = 52
 	for i in N2_plot
-		Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, [N_front, i], k, γ) for k in ω_plot]
+		Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, [N_front, i], k, γ, T0) for k in ω_plot]
 		lines!(ω_plot, Ptotal_plot, label = "$(N_front):$(i)")
 	end
 	axislegend(position = :lt)
@@ -272,7 +272,7 @@ begin
 	 						   ylabel = "Power [W]")
 	N_rear = 21
 	for i in N1_plot
-		Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, [i, N_rear], k, γ) for k in ω_plot]
+		Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, [i, N_rear], k, γ, T0) for k in ω_plot]
 		lines!(ω_plot, Ptotal_plot, label = "$(i):$(N_rear)")
 	end
 	axislegend(position = :lt)
@@ -293,7 +293,7 @@ begin
 	 						   ylabel = "Power [W]")
 	for i in N1_plot[1:2:end]
 		for j in N2_plot[1:2:end]
-			Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, [i, j], k, γ) for k in ω_plot]
+			Ptotal_plot = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, [i, j], k, γ, T0) for k in ω_plot]
 			lines!(ω_plot, Ptotal_plot, label = "$(i):$(j)")
 		end
 	end
@@ -302,7 +302,7 @@ begin
 end	
 
 # ╔═╡ 8cbbda62-7df5-4744-8b4d-8a542e5b6bb0
-Pt = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, T0, [i, j], k, γ) for i in N1_plot[1:2:end] for j in N2_plot[1:2:end] for k in ω_plot]
+Pt = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, [i, j], k, γ, T0) for i in N1_plot[1:2:end] for j in N2_plot[1:2:end] for k in ω_plot]
 
 # ╔═╡ f2903646-26bc-4d6f-9f1f-ceabd3f49837
 s = 4*4*length(ω_plot)
@@ -330,14 +330,14 @@ begin
 	fig_ef_sprockets = Figure()
 	axs_ef_sprockets = Axis(fig_ef_sprockets[1, 1], 
 							   title = "Influence of sprocket combination",
-							   xlabel = "Pedaling cadence [rad/s]",
+							   xlabel = "Sprocket relation",
 	 						   ylabel = "Efficiency [%]",
 							   xticks  = (1:9, ["$(i):$(j)" for i in N1_plot for j in N2_plot]))
-	ylims!(95, 99)
+	ylims!(95, 100)
 	η_plot = []
 	for i in N1_plot
 		for j in N2_plot
-			push!(η_plot, η(fill(μ, 3), p, ρ, ψ, rR, T0, [i, j], ω, γ)*100)
+			push!(η_plot, η(fill(μ, 3), p, ρ, ψ, rR, [i, j], ω, γ, T0)*100)
 		end
 	end
 	barplot!(Float64.(η_plot))
@@ -371,11 +371,11 @@ begin
 						title = "Efficiency vs rear sprocket size",
 						xlabel = "Rear sprocket size",
 						ylabel = "Efficiency [%]",
-						xticks  = (1:l, ["$(52):$(j)" for j in N2_ef_rear]))
+						xticks  = (1:l, ["$(j)" for j in N2_ef_rear]))
 	
-	η_rear = [η(fill(μ, 3), p, ρ, ψ, rR, T0, [52, i], ω, γ)*100 for i in N2_ef_rear]
+	η_rear = [η(fill(μ, 3), p, ρ, ψ, rR, [52, i], ω, γ, T0)*100 for i in N2_ef_rear]
 	barplot!(η_rear)
-	ylims!(95, 99)
+	ylims!(95, 100)
 	fig_ef_rear
 end
 
