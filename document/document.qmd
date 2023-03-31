@@ -1,0 +1,651 @@
+---
+title: "Mechanical analysis and modeling of the efficiency of a road bicycle's power transmission system"
+author:
+    - name: Juan José González Oneto
+      email: jj.gonzalez20@uniandes.edu.co
+      corresponding: true
+      affiliations:
+        - name: Universidad de los Andes
+          department: Mechanical Engineering
+          city: Bogotá
+          country: Colombia
+abstract: An analytical model for a bicycle's chain drive efficiency considering only frictional losses
+          was analysed and implemented in the Julia programming language, resulting in the creation
+          of the package [`BicycleEfficiency.jl`](https://github.com/jotas6/BicycleEfficiency.jl).
+          This model was reviewed and contrasted with experimental data, and was extended in
+          order to increase it's accuracy. This work presents a novel approach to frictional losses
+          by including an expression that allows the calculation of chain tension as a function of
+          operating conditions and by taking into account the effects of chain tensioners.
+date: today
+bibliography: references.bib
+csl: ieee.csl
+jupyter: julia-1.8
+monofont: Liberation Mono
+---
+
+```{julia}
+#| echo: false
+
+using Plots
+using BicycleEfficiency
+include("test_data.jl");
+theme(:vibrant);
+```
+
+# Introduction {#sec-introduction}
+
+Road cycling is one of the most practiced and renowed sports in the world.
+As with practically any other modern sport, developing better equipment and
+improving the athelete's performance through science and engineering has
+become a major focus for professional and amateur riders alike.
+
+One of such efforts is the design of optimal race strategies. This field of
+research revolves around developing mathematical models to simulate a cyclist's
+performance under different race conditions, which can then be analysed in order
+to identify the strategy that minmizes race time for a given track. Typically, these
+models aim to quantify power losses due to resistive forces such as aerodynamic drag,
+and to find their relationship with controllable parameters such as bicycle configuration,
+cyclist posture and power output. Examples of this type of work can be found in
+[@angulomunoz; @roa; @almario; @polancoposture].
+
+One of such sources of power loss is related
+to the efficiency of the bicycle's power transmission system. When developing
+models for race strategy optimization, it is a common practice to consider the
+chain drive's efficiency as a constant parameter obtained from direct measurements
+or from the literature [@angulomunoz; @roa; @almario; @polancoposture].
+This approach is both useful and practical, but has limited interpretability in
+relation to the power transmission's system design and configuration. Hence, there
+exists an opportunity to improve race strategy optimization effort by developing
+models for the bycicle's chain drive system efficiency.
+
+The purpose of this work is to examine currently available models as well as
+implement them computationally, in order to analyse their implications and
+shortcomings. Finally, a new model is proposed through the integration and
+adjustment of the different models found in the literature. The computational
+implementation was carried out using the Julia programming language, and its
+results can be found in the package [`BicycleEfficiency.jl`](https://github.com/jotas6/BicycleEfficiency.jl).
+All calculations have been performed using this package and the code used to
+generate the figures found in this work has been included in order to facilitate
+reproducibility. The package's [documentation](https://jotas6.github.io/BicycleEfficiency.jl/dev/)
+contains instructions and information regarding its use and installation.
+
+# Frictional losses {#sec-frictional-losses}
+
+Frictional work has been identified as one of the sources of energy loss in
+power transmission systems involving roller chains, such as the ones commonly
+found in road bicycles [@SpicerFriction; @EffEstimation]. Owing to the importance of this type of mechanisms
+in industrial settings, there has been extensive work related to the modeling of
+frictional losses. However, it has been noted that a bicyle's power transmission
+system differs significantly from those found in the industry due to its unique
+operating conditions, which include exposure to exteriors and chain misalignment
+[@SpicerFriction; @kidd]. Thus, when modeling frictional losses on a bicycle's chain drive,
+only the models developed specifically for the derailleur-type systems found
+on road bicycles should be considered.
+
+One of the earliest records of such efforts is found in the work of Spicer,
+Richardson, Ehrlich, Bernstein, Fukuda and Terada @SpicerFriction. Their work
+seeked to study the effect of frictional losses on the efficiency of a bicycle's
+chain drive system and among their results is found an analytical model that
+allows the calculation of the efficiency for a variety of operating conditions and
+bicycle configurations, considering only power losses due to frictional work.
+
+## Analytical model {#sec-frictional-losses-model}
+
+The model developed in @SpicerFriction considered three sources of power loss: friction between
+inner link bushing and chain pin, chain line offset and contact between sprocket
+tooth, link roller and inner link bushing, and used the results obtained from
+the dynamic analysis performed on @kidd to calculate chain tension, average
+tooth pressure angle and articulation angles.
+
+Given that the purpose of this work is to analyse and implement the models computationally, a detailed description
+on how the model was developed will not be included. The reader is referred to the original source
+@SpicerFriction for additional details and a more complete treatment on the development of the model.
+
+### Source 1: friction between inner link bushing and chain pin
+
+As the name suggests, the first source of power loss comes from the relative motion that exists between
+chain pins and inner link bushing during chain articulation with the front and rear sprockets. It can be
+shown that power losses from this source can be calculated using the following expression.
+
+$$ P_{1} = \frac{\pi}{2}T_{0}N_{1}\omega_{1}\mu\rho(N_{1}^{-1} + N_{2}^{-1}) $$
+
+Where $T_{0}$ is chain tension, $N_{1}$ is the number of teeth on the front sprocket, $\omega_{1}$ corresponds
+to pedaling cadence, $\mu$ is the coefficient of friction betweeen the pin and the bushing, $\rho$ is the chain
+pin radius and $N_{2}$ is the number of teeth on the rear sprocket.
+
+### Source 2: chain line offset
+
+As it was stated before, one of the unique features of a bicycle's chain drive is that the chain is misaligned most
+of the time due to the fact that it must accomodate different front and rear sprocket configurations. This implies that
+sprocket teeth slide against the inner part of the chain plates, which generates friction. Power losses through this
+mechanism are calculated as follows.
+
+$$ P_{2} = N_{1}\omega_{1}\mu T_{0}r_{0}\sin(\gamma)(N_{1}^{-1} + N_{2}^{-1}) $$
+
+Two new variables have been introduced: $r_{0}$, which corresponds to the depth of sprocket teeth, and $\gamma$, which is the chain
+misalignment angle.
+
+The reader will note that $P_{1}$ and $P_{2}$ are very similar. However, it should be noted that chain misalignment angle ($\gamma$) is
+typically very small, being approximately between 1 and 4 degrees [@kidd; @SpicerFriction]. This means that $\sin(\gamma)$
+will also be very small, and thus frictional losses from this source are almost negligible. This will be further explored in subsequent sections and
+can be visualized in @fig-power-share.
+
+### Source 3: sprocket tooth, link roller and inner link bushing
+
+This source of power loss is related to the articulation and departure of the chain to the sprockets. In particular, it is noted that
+the chain's roller must rotate and slide in order to settle in its final position at the root of the sprocket. This motion generates
+friction between the roller and the bushing (roller rotates) and between the roller and the sprocket tooth (roller slides). Power losses
+due to this interaction can be modeled by the following equation.
+
+$$ P_{3} = \frac{\mu T_{0}r_{R}N_{1}\omega_{1}}{4\pi}A\sum_{i = 1}^{2}
+        [\frac{2\pi}{N_{i}}\cos(\phi_{i}) - \sin(\phi_{i})\ln(\cos(\frac{2\pi}{N_{i}}) + \sin(\frac{2\pi}{N_{i}})\cot(\phi_{i}))] $$
+
+Where the parameter $A$ has the following definition
+
+$$ A = \frac{\delta\psi}{\pi - 1}\sum_{i = 1}^{2}{N_{i}} $$
+
+This equations have introduced new variables, such as $r_{R}$, which is the chain roller radius. Other variables, such as $\phi$ and $\delta$ can be related
+to known parameters. In particular, @kidd presents the following relation to calculate $\phi$.
+
+$$ \phi_{i} = 35 - \frac{120}{N_{i}} $$
+
+It should the noted that the formula given for $\phi$ produces the angle in degrees. On the other hand, $\delta$ can be calculated with the following
+expression, given by @SpicerFriction.
+
+$$ \delta = \psi r_{R} $$
+
+Where $\psi$ is defined as the absolute roller rotation angle, which can be approximated as a constant parameter with a value of $\pi/2$.
+
+### Total power loss and efficiency
+
+Total power loss can be determined through the sum of power losses from sources 1, 2 and 3.
+
+$$ P_{total} = P_{1} + P_{2} + P_{3} $$
+
+Using this result, it is possible to determine the efficiency of the power transmission system, assuming that all power losses come from friction.
+
+$$ \eta = \frac{P_{out}}{P_{in}} = \frac{P_{in} - P_{total}}{P_{in}} = 1 - \frac{P_{total}}{P_{in}} $$
+
+## Model analysis {#sec-frictional-losses-analysis}
+
+Using the model, it is possible to calculate not only the efficiency of the system,
+but also the magnitude power losses. This  leads to one of the
+most interesting facts that can be derived from the model: power loss due to friction
+between inner link bushing and chain pin (source 1) is by far the most significant out of three
+sources of power loss considered in the model. Calculation over a range of commonly found
+operating conditions and sprocket configurations show that it typically accounts for approximately
+90% of total power losses. As an example, @fig-power-share shows the results obtained for
+a pedaling cadence of 80 rpm and a front-rear sprocket size relation of 50:21. It should
+be noted that parameters such as the friction coefficient, chain pitch and others needed
+for the calculation were partially taken from @SpicerFriction and are listed in appendix A.
+
+```{julia}
+#| label: fig-power-share
+#| fig-cap: "Power loss share"
+
+ω = 80*(2π/60)
+N = [50, 21]
+
+P1_80 = P1(μ, ρ, N, ω, T0)
+P2_80 = P2(N, ω, μ, rR, γ, T0)
+P3_80 = P3(μ, rR, N, ω, ψ, T0)
+
+bar([P1_80, P2_80, P3_80], label=false, xlabel="Source",
+    ylabel="Power [W]", xticks = [1, 2, 3], fillcolor = :lavender)
+```
+As it was stated before, @fig-power-share shows that source 1 dominates overall power
+losses. For the particular case considered in @fig-power-share, friction between inner link
+bushing and chain pin accounts for 91.3% of power losses.
+
+Another interesting aspect to explore through the model is the influence of sprocket size and pedaling
+cadence on power loss. @fig-power-sprocket-cadence shows power loss for various
+front and rear sprocket configurations as a function of pedaling cadence.
+
+```{julia}
+#| label: fig-power-sprocket-cadence
+#| fig-cap: "Power loss as a function of pedaling cadence for various sprocket configurations"
+
+ω_rpm = 50:100
+ω_rad = ω_rpm*(2*pi/60)
+N1loss = [48, 52]
+N2loss = [11, 34]
+
+Ploss = [Ptotal(fill(μ, 3), p, ρ, ψ, rR, [i1, i2], j, γ, T0)
+         for i1 in N1loss for i2 in N2loss for j in ω_rad]
+
+shape = (length(ω_rad), length(N1loss) + length(N2loss))
+
+labels = reshape(["$(i):$(j)" for i in N1loss for j in N2loss],
+                (1, length(N1loss) + length(N2loss)))
+
+plot(ω_rpm, reshape(Ploss, shape), xlabel="Pedaling cadence [rpm]",
+     ylabel="Power loss [W]", labels = labels, legend = :topleft)
+```
+
+@fig-power-sprocket-cadence shows that power loss increases linearly with pedaling
+cadence, and that increasing front sprocket size increases power losses, but
+increasing rear sprocket size has the oppposite effect. Another important
+conclusion that can be drawn from @fig-power-sprocket-cadence is that changes on
+rear sprocket size have a much more significant impact than changes on front sprocket
+size. This last behaviour is also exhibited when considering efficiency instead of
+power losses. @fig-efficiency-sprockets shows the efficiency for different front and rear
+sprocket sizes, at 80 rpm.
+
+```{julia}
+#| label: fig-efficiency-sprockets
+#| fig-cap: "Influence of sprocket size on efficiency"
+
+N1_plot = [48, 50, 52]
+N2_plot = [11, 21, 34]
+
+η_plot = []
+for i in N1_plot
+	for j in N2_plot
+		push!(η_plot, η(fill(μ, 3), p, ρ, ψ, rR, [i, j], ω, γ, T0)*100)
+	end
+end
+
+bar(Float64.(η_plot), xlabel="Sprocket sizes", ylabel="Efficiency [%]",
+    label=false, fillcolor=:lavender)
+xticks!(1:9, ["$(i):$(j)" for i in N1_plot for j in N2_plot])
+ylims!(97, 100)
+```
+@fig-efficiency-sprockets shows that changes on front sprocket size have a marginal
+effect on efficiency, but changes on rear sprocket size can have more significant effects
+on efficiency. This effect is more evident in @fig-efficiency-rear, where it can be seen that
+increasing rear sprocket size from 11 teeth to 34 teeth can carry along an increase of 0.7% in
+efficiency. This result agrees with what was shown in @fig-power-sprocket-cadence, which illustrates that power losses
+are reduced when the rear sprocket size is increased. @fig-efficiency-rear explores this relationship in
+further detail, by presenting the calculation of efficiencies for various rear sprocket sizes, keeping
+the front sprocket size constant at 50 teeth and pedaling cadence at 80 rpm.
+
+```{julia}
+#| label: fig-efficiency-rear
+#| fig-cap: "Rear sprocket size effect on efficiency (front sprocket size of 50 teeth)"
+
+N2_ef_rear = [11, 13, 15, 17, 19, 21, 23, 25, 27, 30, 34]
+η_rear = [η(fill(μ, 3), p, ρ, ψ, rR, [50, i], ω, γ, T0)*100
+            for i in N2_ef_rear]
+
+bar(η_rear, label=false, xlabel="Rear sprocket size", ylabel="Efficiency [%]",
+    fillcolor=:lavender, xticks=(1:length(N2_ef_rear), N2_ef_rear))
+ylims!(97, 100)
+```
+
+## Model validation {#sec-frictional-losses-validation}
+
+In addition to the model described above, @SpicerFriction includes efficiency measurements under
+various operating conditions. This is used to contrast the behaviour predicted by the model with experimental
+results and to check the accuracy of power loss estimates. @tbl-friction-validation shows estimated efficiencies
+and their experimental counterparts for different pedaling speeds, at a fixed power input of
+100 W and a sprocket relation of 52:21.
+
+| Pedaling cadence [rpm] | Measured efficiency [%] | Calculated efficiency [%] | Error [%] |
+|:----------------------:|:---------------------:|:-------------------------:|:---------:|
+| 40 | 97.8 | 99.4 | 1.6 |
+| 50 | 95.9 | 99.4 | 3.6 |
+| 60 | 94.4 | 99.4 | 5.3 |
+| 70 | 92.8 | 99.4 | 7.1 |
+| 80 | 91.3 | 99.4 | 8.9 |
+| 90 | 89.9 | 99.4 | 10.6 |
+: Frictional losses model validation {#tbl-friction-validation}
+
+@tbl-friction-validation shows that calculated efficiencies differ from those obtained through
+experimental measurements. In particular, it can be seen that the model predicts higher efficiencies
+than observed and that it doesn't account for variations in pedaling cadence, which seem to significantly affect efficiency.
+
+On the other hand, the model discussed above presents a series of shortcomings related to chain tension. One of them is
+the fact that chain tension is modeled as a constant parameter that is independent of operating conditions and bicycle
+configuration. Examination of the literature regarding chain drive systems, such as @chains, reveal that this assumption
+does not hold true, and that chain tension has a strong dependence on parameters such as power input and pedaling cadence.
+The following section will focus on this issue.
+
+Another issue that can be found in the model is the fact that it only accounts for losses on the rear and front sprocket,
+which is not completely accurate, since a road's bicycle derailleur unit involves the presence of two additional sprockets.
+The effect of the presence of this mechanism is expected to increase power losses and will be explored in subsequent sections.
+
+# Chain tension {#sec-chain-tension}
+
+The models discussed previously all consider chain tension as a fixed parameter that might be related to bicycle configuration and
+operating conditions, but no expressions are given to calculate its value or understand its relationship with other parameters.
+A review of the literature regarding chain drive systems shows that chain tension can be related to chain and sprocket geometry
+(bicycle configuration) and to operating conditions such as power input @chains. This section presents a model developed to estimate chain tension
+as a function of current operating conditions, in an effort to increase model accuracy and reduce the number of assumptions and parameters
+needed to calculate efficiency.
+
+First, it should be noted that chain tension comes from two sources mainly: centrifugal force and the forces
+exerted by the sprockets to the chain @chains. @fig-tension-diagram shows the chain (represented as small circles)
+and the front sprocket (big circle) and the variables involved in the calculation of chain tension due to sprocket
+forces.
+
+![Chain tension due to force exerted by the sprockets](fig_tension.pdf){#fig-tension-diagram}
+
+Following the notation used in @fig-tension-diagram, $T$ corresponds to chain tension, $\omega_{1}$ is pedaling
+cadence, $R_{1}$ is the pitch radius of the front sprocket, $l_{c}$ is the length of the crank and $F_{c}$
+is the force applied to the crank by the cyclist during pedaling.
+
+@fig-tension-diagram shows that the force applied to the crank by the pedalist generates torque on the front sprocket, which is given
+by the following expression.
+
+$$ \tau = l_{c}F_{c}  $$
+
+This torque is transmitted to the front sprocket, which then exerts a force to the chain through its teeth. This force is perceived
+by the chain as tension and can be calculated using the torque on the front sprocket and it's pitch radius.
+
+$$ T = \frac{\tau}{R_{1}} = \frac{l_{c}F_{c}}{R_{1}} $$
+
+Crank length and the force exerted by the cyclist to the pedals are not commonly known. Thus, it is more useful to express this result
+in terms of power input and pedaling cadence, which are much more commonly estimated and used by cyclists in pacing strategies. Observing
+that power input can be calculated as torque times pedaling cadence, the following results are obtained.
+
+$$ P_{in} = l_{c}F_{c}\omega_{1} $$
+
+$$ \frac{P_{in}}{\omega_{1}} = l_{c}F_{c} $$
+
+Substituting this expression on the formula for chain tension ($T$) yields the following relationship.
+
+$$ T = \frac{P_{in}}{R_{1}\omega_{1}} $$
+
+The front sprocket's pitch diameter can be calculated using the following formula.
+
+$$ PD = \frac{p}{\sin(\pi/N_{1})} $$
+
+Where $p$ corresponds to the chain pitch. Noting that $\pi << N_{1}$ for commonly found front sprocket sizes cycling, and that
+pitch radius is one half of the pitch diameter, the following expression is obtained for the pitch radius.
+
+$$ R_{1} = \frac{pN_{1}}{2\pi} $$
+
+This result allows the following formulation for chain tension due to the force exerted by the sprocket.
+
+$$ T = \frac{2\pi P_{in}}{\omega_{1}pN_{1}} $$
+
+The other component of chain tension, which is caused by centrifugal force, can be calculated using the following expression @chains.
+
+$$ T_{c} = mv^2 $$
+
+Where $m$ is the linear density of the chain (mass per unit length) and $v$ is its velocity, which can be calculated from pedaling
+cadence and sprocket pitch radius as $\omega_{1}R_{1}$. Substituting this expression for $v$ and using the result obtained above of
+$R_{1}$, tension due to centrifugal forces can be calculated as follows.
+
+$$ T_{c} = \frac{m(\omega_{1}pN_{1})^2}{4\pi^{2}} $$
+
+Lastly, total chain tension can be determined by the sum of the tension due to the force exerted by the sprockets and the tension due to
+centrifigual forces. This produces the following result.
+
+$$ T_{0} = \frac{2\pi P_{in}}{\omega_{1}pN_{1}} + \frac{m(\omega_{1}pN_{1})^2}{4\pi^{2}} $$
+
+This result shows that chain tension is a dynamic parameter that depends on riding conditions such as power input and pedaling cadence,
+and that it also depends on parameters related to the bicycle's geometry and configuration, such as front sprocket size and chain pitch.
+This equation can be used to calculate chain tension in the models described above, instead of passing it as a constant parameter, which
+should allow to produce more accurate predictions and model behaviour.
+
+Lastly, @fig-tension-cadence shows chain tension as a function of power input, for a fixed pedaling cadence of 80 rpm and
+a range of front sprocket sizes.
+
+```{julia}
+#| label: fig-tension-cadence
+#| fig-cap: "Chain tension as a function of power input for a pedaling cadence of 80 rpm"
+
+N = 46:2:52
+P_plot = 100:350
+
+Tplot = [T(i, ω, p, j, m) for j in N for i in P_plot]
+
+plot(P_plot, reshape(Tplot, (length(P_plot), length(N))),
+     xlabel="Power input [W]", ylabel="Chain tension [N]",
+     label=reshape(N, (1,length(N))), legend=:topleft)
+```
+@fig-tension-cadence shows that chain tension in is the range of 100 to 450 N for common cycling conditions,
+which is in agreement to the values presented in @SpicerFriction. Moreover, it shows that tension increases
+linearly with power input for a given pedaling cadence, which is to be expected, since increasing power input
+at a fixed pedaling cadence implies that a greater force is being applied to the pedals. Finally, it can also
+be seen that chain tension increases when front sprocket size decreases.
+
+# Chain tensioner
+
+One of the unique characteristics of a road bicycle's chain drive system is the presence of a mechanism known as the
+chain tensioner. Given the fact that bicycles are equipped with multiple sprocket configurations ranging a wide variety
+of sizes, it is necessary to have a mechanism that ensures that the chain won't be too tensioned when the current configuration
+involves high sprocket sizes, and that it won't become slack when sprockets sizes are low. This mechanism is part of the
+derrailleur unit, and usually involves the addition of two small sprockets under the rear sprocket. These two sprockets
+are attached to a mechanical arm which can move away or towards the front sprocket, and thus modify the distance that must
+be accommodated by the chain (for a fixed chain length, chain tension increases as the distance covered by the chain increases).
+
+Since frictional losses are associated with the engaging and departure of the chain from the sprockets, the addition of two
+extra sprockets through the chain tensioner should increase power losses and decrease overall system efficiency. These effects
+become particularly important when considering that the sprockets in chain tensioners are typically small, which creates high
+articulation angles and increases frictional work between inner link bushing and chain pins (source 1 in frictional losses section).
+As it was previously shown in @fig-power-share, source 1 dominates overall power losses, so including the effect from the chain tensioner's
+sprockets should have a significant effect on efficiency calculations. Also, it was shown in @tbl-friction-validation that calculated
+efficiencies are higher than their measured counterparts, so including the contributions from these sprockets should increase model accuracy.
+
+Modifiying the equation for source one can be done by adding the contributions of the sprockets in the tensioner. This results in the following
+expression.
+
+$$ P_{1} = \frac{\pi}{2}T_{0}N_{1}\omega_{1}\mu\rho\sum_{i = 1}^{4} \frac{1}{N_{i}} $$
+
+It should be noted that the expression $(N_{1}^{-1} + N_{2}^{-1})$ has been replaced by a summation. This expression would be identical to the one
+reported above if the summation went up to $N_{2}$, however, the two extra terms added ($N_{3}$ and $N_{4}$) take into account the size of the sprockets
+in the tensioner.
+
+Even though frictional losses are mostly due to source 1, equations for sources 2 and 3 can also be adjusted to include the effects of the tensioner.
+Noting that the expressions for sources 1 and 2 are very similar, the adjustment for source 2 also consists in adding the contribution of each sprocket.
+
+$$ P_{2} = N_{1}\omega_{1}\mu T_{0}r_{0}\sin(\gamma)\sum_{i = 1}^{4} \frac{1}{N_{i}}$$
+
+Lastly, frictional losses associated to source 3 can also be adjusted to include the effects of the chain tensioner. The resulting expression has the
+following form.
+
+$$ P_{3} = \frac{\mu T_{0}r_{R}N_{1}\omega_{1}}{4\pi}A\sum_{i = 1}^{4}
+        [\frac{2\pi}{N_{i}}\cos(\phi_{i}) - \sin(\phi_{i})\ln(\cos(\frac{2\pi}{N_{i}}) + \sin(\frac{2\pi}{N_{i}})\cot(\phi_{i}))] $$
+
+This time, the parameter A has the following definition.
+
+$$ A = \frac{\delta\psi}{\pi - 1}\sum_{i = 1}^{4}{N_{i}} $$
+
+# Frictional losses revisited
+
+The results obtained for chain tension as a function of operating conditions and the adjustments made to include the effect of the
+chain tensioner on the model for frictional losses will be incorporated to generate a new analysis of frictional losses. In order to
+study the effect of these modifications, the analysis made for the original model (presented above) will be replicated.
+
+First, power loss share will be evaluated to determine if changes made to the model altered the distribution of power losses among the
+3 sources considered. @fig-power-share-2 shows the results for identical operating conditions as @fig-power-share. In both cases, power input
+was considered to be 250 W.
+
+```{julia}
+#| label: fig-power-share-2
+#| fig-cap: "Power loss share with adjusted model"
+
+N = [50, 21, 12, 12]
+
+P1_80 = P1T(Pin, μ, ρ, N, ω, m, p)
+P2_80 = P2T(Pin, N, ω, μ, rR, γ, m, p)
+P3_80 = P3T(Pin, μ, rR, N, ω, ψ, m, p)
+
+bar([P1_80, P2_80, P3_80], label=false, xlabel="Source",
+    ylabel="Power [W]", xticks=[1, 2, 3], fillcolor=:lavender)
+```
+
+In this case, source 1 accounts for 88.3% of total power losses, which is slightly less than
+the value obtained for the original model. However, it can still be seen that power total power
+loss comes mostly from source 1.
+
+Another aspect that is interesting to evaluate is the dependence of power losses on sprocket configuration
+and pedaling cadence. This was done in @fig-power-sprocket-cadence for the original model, and
+@fig-power-sprocket-cadence-2 shows the results obtained for the new model, under the same operating
+conditions.
+
+```{julia}
+#| label: fig-power-sprocket-cadence-2
+#| fig-cap: "Power loss as a function of pedaling cadence for various sprocket configurations, adjusted model"
+
+Ploss = [PtotalT(Pin, fill(μ, 3), p, ρ, ψ, rR, [i1, i2, 12, 12], j, γ, m)
+         for i1 in N1loss for i2 in N2loss for j in ω_rad]
+
+plot(ω_rpm, reshape(Ploss, shape), xlabel="Pedaling cadence [rpm]",
+     ylabel="Power loss [W]", labels=labels, legend=:topleft)
+```
+
+@fig-power-sprocket-cadence-2 shows that the adjustments have introduced a change on the model's behaviour. In particular, it
+can be observed that power losses are now virtually constant with respect to pedaling cadence. This can be explained
+by the fact that it was shown that chain tension is mainly due to the force exerted by the sprocket teeth to the chain (the contribution of
+centrifgual forces is abour 1%), which is inversely proportional to pedaling cadence. A closer examination of the curves
+presented in @fig-power-sprocket-cadence-2 reveals that power losses are not constant with respect to pedaling cadence,
+since the term related to centrifugal forces is proportional to the second power of pedaling candece. @fig-power-sprocket-cadence-3
+shows total power losses only for the 48:34 sprocket relation.
+
+```{julia}
+#| label: fig-power-sprocket-cadence-3
+#| fig-cap: "Power loss as a function of pedaling cadence for a sprocket relation of 48:34, adjusted model"
+
+Ploss = [PtotalT(Pin, fill(μ, 3), p, ρ, ψ, rR, [48, 34, 12, 12], i, γ, m)
+         for i in ω_rad]
+
+plot(ω_rpm, Ploss, xlabel="Pedaling cadence [rpm]",
+     ylabel="Power loss [W]", label=false)
+```
+@fig-power-sprocket-cadence-3 shows power losses tend to increase with pedaling cadence, but that this effect is barely
+noticeable under common operating conditions.
+
+It is also interesting to note that, once again, rear sprocket size has a much more dramatic effect on power losses (and efficiency)
+than front sprocket size. This claim is supported by @fig-power-sprocket-cadence-2, where it can be seen that power losses increase significantly
+when rear sprocket size is reduced. This means that the dependence of efficiency on rear sprocket size should remain approximately equal, with
+the only difference that calculated efficiencies should be lower than before. @fig-efficiency-rear-2 shows calculated efficiencies for a variety
+of rear sprocket sizes, keeping front sprocket size at 50 teeth and pedaling cadence at 80 rpm.
+
+```{julia}
+#| label: fig-efficiency-rear-2
+#| fig-cap: "Rear sprocket size effect on efficiency (front sprocket size of 50 teeth), adjusted model"
+
+η_rear2 = [ηT(Pin, fill(μ, 3), p, ρ, ψ, rR, [50, i, 12, 12], ω, γ, m)*100
+            for i in N2_ef_rear]
+
+bar(η_rear2, label=false, xlabel="Rear sprocket size", ylabel="Efficiency [%]",
+    fillcolor=:lavender, xticks=(1:length(N2_ef_rear), N2_ef_rear))
+ylims!(96.5, 98)
+```
+
+@fig-efficiency-rear-2 shows that including the effects of the chain tensioner produced a decrease of about 1.6% in calculated
+efficiencies for all rear sprocket sizes, which were mostly over 99% in the original model and are now all under 98%.
+
+As it was mentioned before, one the of the shortcomings observed in the original model is that it predicts that efficiency is
+independent of pedaling cadence. Since chain tension is now a function of pedaling cadence and the behaviour of power losses
+with respect to this parameter has changes, it is expected that the relationship between efficency and pedaling cadence will be
+modified. @fig-efficiency-cadence explores this outcome.
+
+```{julia}
+#| label: fig-efficiency-cadence
+#| fig-cap: "Efficiency as a function of pedaling cadence"
+
+ω_rpm = 50:150
+ω_rad = ω_rpm*(2*pi/60)
+
+η_pc = [ηT(Pin, fill(μ, 3), p, ρ, ψ, rR, [52, 21, 12, 12], i, γ, m)*100
+            for i in ω_rad]
+
+plot(ω_rpm, η_pc, label=false, xlabel="Pedaling cadence [rpm]", ylabel="Efficency [%]")
+```
+
+@fig-efficiency-cadence shows that efficiency decreases when pedaling cadence is increased, for a fixed
+power input from the cyclist. However, increasing pedaling cadence from 50 to 150 rpm only decreases efficiency
+by 0.05%, which does not account for the observed behaviour in experiments.
+
+Another common scenario in cycling is to keep pedaling cadence constant and modify power input. @fig-efficiency-power
+shows the change in efficiency as power input is increased, for a constant pedaling cadence of 80 rpm.
+
+```{julia}
+#| label: fig-efficiency-power
+#| fig-cap: "Efficiency as a function of power input, for a constant pedaling cadence of 80 rpm"
+
+Pplot = 50:350
+
+ηP = [ηT(i, fill(μ, 3), p, ρ, ψ, rR, [52, 21, 12, 12], ω, γ, m)*100 for i in Pplot]
+
+plot(Pplot, ηP, label=false, xlabel="Power input [W]", ylabel="Efficiency [%]")
+```
+
+@fig-efficiency-power shows that efficiency increases with load, which is an outcome that could not be observed
+in the original model, as stated by one of the authors in @SpicerDeformation. Moreover, this behaviour agrees with
+experimental measurements presented in @SpicerFriction and @HighTechCycling. However, it should be noted that increasing
+power input from 50 to 350 W only increased efficiency by 0.04%, which is much less than observed in practice.
+
+## Model validation
+
+In order to determine whether the new modifications to the model increased its performance, the new model will also be validated
+against experimental data and compared with the original results. @tbl-validation-2 presents these results.
+
+| Pedaling cadence [rpm] | Measured efficiency [%] | Calculated efficiency [%] | Error [%] |
+|:----------------------:|:-----------------------:|:-------------------------:|:---------:|
+| 40 | 97.8 | 97.78 | 0.02 |
+| 50 | 95.9 | 97.78 | 2.8 |
+| 60 | 94.4 | 97.77 | 3.6 |
+| 70 | 92.8 | 97.77 | 5.4 |
+| 80 | 91.3 | 97.76 | 7.1 |
+| 90 | 89.9 | 97.75 | 8.7 |
+: Modified frictional losses model validation {#tbl-validation-2}
+
+A comparison between the results presented in @tbl-validation-2 with those in @tbl-friction-validation shows that the changes
+introduced to the model have reduced the experimental error by approximately 2% for all pedaling speeds. However, it is
+still observed that error increases with pedaling cadence. This is due to the fact that the predicted decrease in efficiency
+as a consequence of increased pedaling cadence is much less than the one observed in practice. In particular, increasing
+pedaling cadence from 40 to 90 rpm decreases efficiency by almost 8%, while the model predicts that this decrease is only
+0.03%.
+
+# Discussion and Conclusions
+
+An analytical model to calculate a road bicycle's power transmission's system efficiency was developed and implemented
+computationally using the Julia programming language, which resulted in the creation of the library [`BicycleEfficiency.jl`](https://github.com/jotas6/BicycleEfficiency.jl).
+Although this model was largely obtained from the literature (particularly @SpicerFriction), improvements regarding the
+calculation of chain tension as a function of operating conditions and the consideration of the effects of chain tensioners were
+proposed in order to improve the model's accuracy.
+
+The analysis performed on the model's outcomes and implications revealed a series of interesting facts about the behaviour of power losses
+and efficiency. Particularly, it was shown that efficiency and power losses are much more sensible to changes in rear sprocket
+size than front sprocket size. @fig-power-sprocket-cadence and @fig-power-sprocket-cadence-2 show that increasing sprocket size reduces
+power loss and yields higher efficiencies, which is explained by a decrease in articulation angles, which in turn limits relative motion
+between chain pins and bushings during chain articulation. This is related to one of the main outcomes of the model, which indicates that
+nearly 90% of power losses come from friction betweeen chain pins and bushings, as it was shown in @fig-power-share and @fig-power-share-2.
+
+Regarding the modifications performed to the original model proposed in @SpicerFriction, it was observed they introduced several changes on the
+model's behaviour. In particular, a comparison between @fig-power-sprocket-cadence and @fig-power-sprocket-cadence-2 reveals that the original model predicts a linear
+relationship between power losses and pedaling cadence, while the modified version of the model predicts that power losses are almost constant with
+respect to pedaling cadence (see also @fig-power-sprocket-cadence-3). Related to this is the behaviour exhibited in @fig-efficiency-cadence and @fig-efficiency-power
+where it was shown that efficiency is no longer independent on pedaling cadence and power input (original model). Instead, efficiency increases
+with power input and decreases with pedaling cadence, which is in agreement with experimental observations such as the ones found in @HighTechCycling.
+
+Experimental validation of the models show that both models have a tendency to overestimate efficiencies, especially at high pedaling speeds, having an error
+of approximately 11% at 90 rpm for the original model. Changes introduced to the model increased its accuracy by nearly 2%, and allow the observation of
+the reduction of efficiency at higher pedaling cadences, whereas efficiency is predicted to remain constant in the original model. However, calculated efficiencies
+are still higher than their experimental counterparts, and the predicted decrease of efficiency at higher pedaling cadences is much smaller than observed.
+
+Given that predicted efficiencies are higher than observed, even after introducing the adjustments mentioned above, it is reasonable to conclude that there
+must be another source of power loss apart from friction. This was also identified in @SpicerFriction, which led to measurements of energy losses using thermal cameras.
+Although these measurements are not explicitly included in the article, it is mentioned that energy losses determined with this method
+agree with model predictions, which supports the idea that there is another source of energy dissipation.
+Works such as @SpicerDeformation and @EffEstimation developed models for energy losses due to elastic deformation and impact.
+Future work on this area should focus on incorporating these results into the model and evaluating it's accuracy.
+In particular, it would be interesting to evaluate if these new sources of power loss can account for the reduction of
+efficiency at higher pedaling cadences, which appears to be the main weak point of the model presented here.
+
+# Appendix A: chain drive parameters used in calculations {.appendix}
+
+@tbl-chain-parameters presents the parameters involved in the models implemented
+and the values used for calculations. The values which are not associated to a
+reference come from measurements performed by the author on a commercially
+available road bicycle.
+
+| Parameter | Symbol | Units | Value |
+|:-----------:|:--------:|:-------:|:-------:|
+| Friction coefficient | $\mu$ | - | 0.09 @SpicerFriction|
+| Chain pitch | $p$ | mm | 12.22 |
+| Chain pin radius| $\rho$ | mm | 1.13 |
+| Chain roller radius | $R_{r}$ | mm | 2.5 |
+| Chain misalignment angle | $\gamma$ | deg | 1 @SpicerFriction |
+| Free chain tension | $T_{0}$ | N | 300 @SpicerFriction |
+| Roller rotation angle | $\psi$ | deg | 90 @SpicerFriction |
+| Chain linear density | $m$ | $kg/m$ | 1.52 @chains |
+| Cyclist power input | $P_{in}$ | W | 250 |
+: Chain drive parameters {#tbl-chain-parameters}
+
+# References {#sec-references}
